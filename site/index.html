@@ -1,0 +1,206 @@
+<head>
+    <meta charset="utf-8"/>
+    <title>Covid-19 Preprint Network</title>
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@pournaki">
+    <meta name="twitter:creator" content="@pournaki">
+    <meta name="twitter:title" content="covid-19 preprint network">
+    <meta name="twitter:description" content="Find relevant COVID-19 related literature.">
+    <meta name="twitter:image" content="https://pournaki.com/covid19preprints/img/social.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/awesomplete/1.1.5/awesomplete.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/awesomplete/1.1.5/awesomplete.min.js"></script>
+    <script src="https://d3js.org/d3.v4.js"></script>
+    <link rel="stylesheet" href="./style.css">
+    <script src="https://unpkg.com/force-graph"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script> 
+    $(document).ready(function(){
+      $("#panel00").click(function(){
+        $("#content00").slideToggle(300);
+              });
+    });
+    $(document).ready(function(){
+      $("#panel01").click(function(){
+        $("#content01").slideToggle(300);
+      });
+    });
+    $(document).ready(function(){
+      $("#panel02").click(function(){
+        $("#content02").slideToggle(300);
+      });
+    });
+    $(document).ready(function(){
+      $("#panel03").click(function(){
+        $("#content03").slideToggle(300);
+      });
+    });
+    $(document).ready(function(){
+      $("#panel04").click(function(){
+        $("#content04").slideToggle(300);
+      });
+    });
+    $(document).ready(function(){
+      $("#panel05").click(function(){
+        $("#content05").slideToggle(300);
+      });
+    });
+    $(document).ready(function(){
+      $("#panel06").click(function(){
+        $("#content06").slideToggle(300);
+      });
+    });
+    $(document).ready(function(){
+      $("#panel07").click(function(){
+        $("#content07").slideToggle(300);
+      });
+    });
+
+    $( function() {
+        $( "#totalborder" ).draggable();
+        } );
+    </script>
+</head>
+<body>
+
+<div id="totalborder">
+<div class="onoffswitch">
+    <input type="checkbox" name="mode" class="onoffswitch-checkbox" id="myonoffswitch">
+    <label class="onoffswitch-label" for="myonoffswitch"></label>
+</div>
+<div class="borders" id="titleborder">
+<div id="title">covid-19 preprint network</div>
+</div>
+<div class="borders">
+<div class= "subtitle" id="panel00">FIND PREPRINTS</div>
+<div class = "content" id="content00">
+    <div class="description"> Search preprint by title</div>
+    <input id="searchuser" type="search"/>
+        <a href="javascript:void(0);" onclick="fetchinfo()" class="button1">Show in network</a>        
+        <a href="javascript:void(0);" onclick="openart()" class="button1">Open in new tab</a> 
+        <a href="javascript:void(0);" onclick="resetcolors()" class="button1">Reset all</a> 
+    <div style="margin-top: 10px"></div>
+        <a style = "margin-top: 0" href="javascript:void(0);" onclick="getlatest()" class="button1">Highlight preprints from last 3 days</a>
+        <a style = "margin-top: 0" href="javascript:void(0);" onclick="fieldcolor()" class="button1">Color preprints by medRxiv category</a>
+        <a style = "margin-top: 0" href="javascript:void(0);" onclick="exportnodes()" class="button1">Export highlighted titles as textfile</a>        
+<!--         <a style = "margin-top: 0" href="javascript:void(0);" onclick="resetcolors()" class="button1">Reset node and link colors</a> -->
+<div class="borders_small">
+    <div class= "subsubtitle" id="panel06">LEGEND (TOGGLE)</div>
+    <div class = "content" id="content06">
+    <div>
+    <ul id="leghere" style="font-size: 10pt">
+    </ul>
+    </div>
+    </div>
+</div>
+
+</div>
+</div>
+<div class="borders">
+<div class= "subtitle" id="panel03">METADATA</div>
+<div class = "content" id="content03">
+    <div id="userinfostring"></div>
+</div>
+</div>
+<!-- <div class="borders">
+<div style = "margin-bottom: 0" class= "subtitle" id="panel01">OPTIONS</div>
+<div style = "margin-top: 0" class = "content" id="content01">
+</div>
+</div> -->
+
+<div class="borders">
+<div class= "subtitle" id="panel04">METHODS</div>
+<div class = "content" id="content04">
+    <p style="font-size: 10pt; margin-top: 0">
+<!--     Explore a co-occurence network of preprints related to the COVID-19 outbreak from <a class="nlink" target="_blank" href="https://www.medrxiv.org/">medRxiv</a> and <a class="nlink" target="_blank" href="https://www.biorxiv.org/">bioRxiv</a>. The underlying dataset is based on a <a class="nlink" target="_blank"  href="https://connect.medrxiv.org/relate/content/181">curated list of articles</a> on medRxiv.  -->
+    Every node in the network is a preprint, and a link is drawn between preprints based on the semantic similarity of their abstracts. 
+    </p>    
+    <h6>Data acquisition</h6>
+    <p style="font-size: 10pt;margin-top:0">
+        The underlying dataset is based on a <a class="nlink" target="_blank" href="https://connect.medrxiv.org/relate/content/181">curated list of COVID-19 related preprints</a> from <a class="nlink" target="_blank" href="https://www.medrxiv.org/">medRxiv</a> and <a class="nlink" target="_blank" href="https://www.biorxiv.org/">bioRxiv</a>.
+    </p>
+    <h6>Text preprocessing</h5>
+    <p style="font-size: 10pt;margin-top:0">
+        Before creating the network based on abstract similarity, the text is preprocessed using <a class="nlink" target="_blank" href="https://spacy.io/">spaCy</a>. English stopwords and punctuation are removed, as well as often occurring trivial words like "covid". Then, the abstracts are <a class="nlink" target="_blank" href="https://en.wikipedia.org/wiki/Lemmatisation">lemmatized</a>. Lemmas that are neither (proper) nouns, adjectives nor verbs are removed from the analysis.
+    </p>
+    <h6>Network creation</h5>
+    <p style="font-size: 10pt;margin-top:0">
+        Every node is an article. Links are drawn between nodes according to the following rule: </p>
+        <p style="font-size: 10pt; margin-bottom: 8px;padding-left: 10px">
+            Let 𝑀<sub>𝑖,𝑗</sub> be be the number of common lemmata between nodes 𝑖 and 𝑗. <br>
+            A link is created between 𝑖 and 𝑗 if 𝑀<sub>𝑖,𝑗</sub> > 𝑡<sub>𝑙</sub>.
+        </p>
+
+    <p style="font-size: 10pt;margin-top:0">
+        𝑡<sub>𝑙</sub> is defined as 16 exploratively. <br>
+        The network is layed out using a force-directed algorithm (nodes that share links are closer to each other) with the <a class="nlink" target="_blank" href="https://github.com/vasturiano/force-graph">force-graph</a> library.
+    </p>
+</div>
+</div>
+<!-- <div class="borders">
+<div class= "subtitle" id="panel07">FAQ</div>
+<div class = "content" id="content07">
+        <h6>Why are there unconnected articles?</h6>
+        <p style="font-size: 10pt;margin-top:0"> 
+        Because we define a threshold of common lemmata of 15. Therefore, the outer ring of articles is not similar enough to the large connected component. 
+        </p>
+        <h6>Why is publication x not in this network?</h6>
+        <p style="font-size: 10pt;margin-top:0"> 
+        At the moment, we only use the <a class="nlink" target="_blank" href="https://connect.medrxiv.org/relate/content/181">curated list of Covid-19 related articles</a> from medRxiv to create the network. If the article is not within this  
+        </p>
+</div>
+</div> -->
+<div class="borders">
+<div class= "subtitle" id="panel05">ABOUT</div>
+<div class = "content" id="content05">
+    <p style="font-size: 10pt;margin-top:0">
+        This project is made by members of the <a class="nlink" target="_blank" href="https://odycceus.eu">Odycceus project</a> at the Max Planck Institute for Mathematics in the Sciences, Leipzig with the help of <a class="nlink" target="_blank" href="https://www.researchgate.net/profile/Alexander_Dejaco">Alexander Dejaco</a>. <br><br>
+        
+        Please contact the developer <a class="nlink" target="_blank" href="https://pournaki.com">Armin Pournaki</a> if you have ideas for improvements and/or found bugs:
+        pournaki[at]mis.mpg.de
+    </p>
+</div>
+</div>
+<div id="footer">
+    <div style="color: var(--color_text); font-size: 8pt; margin-top: 15px; margin-bottom:5px" id="updatetime"></div> 
+    covid-19 preprint network v0.1 <br>
+
+    2020 <a class="nlink" target="_blank" rel="noopener noreferrer" href="https://odycceus.eu">Odycceus Project</a></div></div>
+</div>
+
+<div id="graph" style="width:100%;height: 100%;position: absolute;"></div>
+
+<script type="text/javascript">
+
+// load graph from external file
+var data = (function () {
+    var json = null;
+    $.ajax({
+        'async': false,
+        'global': false,
+        'url': "./data/graph.json",
+        'dataType': "json",
+        'success': function (data) {
+            json = data;
+        }
+    });
+    return json;
+})(); 
+
+const elem = document.getElementById('graph');
+const Graph = ForceGraph()(elem)
+.graphData({nodes: data.nodes, links: data.links})
+.nodeLabel(node => node.title)
+.nodeVal(() => 1.7)
+.nodeColor(() => 'black')
+.linkColor(() => 'rgba(0,0,0,0.1)')  
+.linkHoverPrecision(10)
+.onNodeRightClick(node => { Graph.centerAt(node.x, node.y, 1000);Graph.zoom(8, 2000);})
+
+$("#content00").slideDown(0)
+
+</script>
+
+<script src="functions.js"></script>
+
+</body>
