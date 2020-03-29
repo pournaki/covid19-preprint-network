@@ -1,3 +1,5 @@
 spacy
 tqdm
 habanero
+cufflinks
+plotly

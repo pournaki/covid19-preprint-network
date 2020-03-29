@@ -1,5 +1,10 @@
 lftp*
 .DS_Store
+plots/
+logs/
+data/
+site/
+deploy.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

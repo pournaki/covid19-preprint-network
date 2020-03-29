@@ -21,6 +21,19 @@ from habanero import Crossref
 from datetime import datetime
 from collections import Counter
 
+# define DIRS
+DATADIR = "./data/"
+PLOTDIR = "./plots/"
+SITEDIR = "./site/"
+LOGSDIR = "./logs/"
+SITESUBDIR = "./site/data/"
+
+DIRS = [DATADIR, PLOTDIR, SITEDIR, LOGSDIR, SITESUBDIR]
+
+for DIR in DIRS:
+    if not os.path.exists(DIR):
+        os.makedirs(DIR)
+
 # download data
 url = 'https://connect.medrxiv.org/relate/collection_json.php?grp=181'
 response = urllib.request.urlopen(url)
@@ -48,7 +61,6 @@ for el in jsonl:
     articles.append(art)
 
 # check if you already have subfields
-DATADIR = "./data/"
 CATS = "CATS.json"
 
 catfile = DATADIR + CATS
@@ -203,7 +215,7 @@ otherstr = """<li style="color: #000075">Other</li>"""
 fullstr += otherstr
 
 # create d3graph
-d3graph = {'graph': {'date': str(datetime.now())[:16],
+d3graph = {'graph': {'date': str(datetime.now())[:16]+" UTC",
                      'N_nodes': len(nodes),
                      'N_links': len(links),
                      't_links': t_links,
@@ -215,7 +227,7 @@ d3graph = {'graph': {'date': str(datetime.now())[:16],
 print(f"There are {len(links)} links in the co-occurence network.")
 
 # save graph and metadata for site
-with open("./site/data/graph.json", 'w', encoding='utf-8') as f:
+with open(SITESUBDIR + "graph.json", 'w', encoding='utf-8') as f:
     json.dump(d3graph, f, ensure_ascii=False)
 
 graph_metadata = {}
@@ -229,13 +241,57 @@ for idx, article in enumerate(articles):
         'authors': article['authors'],
         'abstract': article['abstract']
     }
-with open("./site/data/graph_metadata.json", 'w', encoding='utf-8') as f:
+with open(SITESUBDIR + "graph_metadata.json", 'w', encoding='utf-8') as f:
     json.dump(graph_metadata, f, ensure_ascii=False)
 
-# write log
-with open("./logs/log.txt", "a", encoding='utf-8') as f:
-    time = str(datetime.now())[:16]
-    Nn = len(nodes)
-    Nl = len(links)
-    f.write(f"{time} || t={t_links} | {Nn} nodes, {Nl} links")
-    f.write("\n")
+# plot stats
+import plotly
+import cufflinks
+import json
+import pandas as pd
+
+# rearrange colordict
+colordict['Other'] = colordict['not_found']
+del colordict['not_found']
+artlist = []
+with open(DATADIR + "ARTICLES.json", "r", encoding="utf-8") as f:
+    for line in f:
+        lin = f.readline()
+        artlist.append(json.loads(line))
+
+# remove the colors we don't need
+for art in artlist:
+    if art['subfield'] in colordict.keys():
+        pass
+    else:
+        art['subfield'] = 'Other'
+
+df = pd.DataFrame(artlist)
+
+
+def plot_cattimeline(df, colordict):
+    figure = df.groupby('date')["subfield"].value_counts().unstack().fillna(0).iplot(
+             kind='scatter', asFigure=True)
+    # adjust the colors
+    for i in figure['data']:
+        i['line']['color'] = colordict[i['name']]
+    figure['layout']['title'].update({'text': 'Timeline of COVID-19 preprints'})
+    figure['layout']['xaxis'].update({'title': f'time'})
+    figure['layout']['yaxis'].update({'title': 'number of articles per category'})
+    return figure
+
+
+def plot_fulltimeline(df):
+    figure = df.groupby('date')["doi"].nunique().iplot(
+        kind='line', asFigure=True)
+    figure['layout']['title'].update({'text': 'Timeline of COVID-19 preprints'})
+    figure['layout']['xaxis'].update({'title': f'time'})
+    figure['layout']['yaxis'].update({'title': 'total number of articles'})
+    figure['data'][0]['line'].update({'color': 'rgb(0,0,0)'})
+    return figure
+
+
+fig1 = plot_fulltimeline(df)
+fig2 = plot_cattimeline(df, colordict)
+plotly.offline.plot(fig1, filename=PLOTDIR + 'full.html', auto_open=False)
+plotly.offline.plot(fig2, filename=PLOTDIR + 'cats.html', auto_open=False)
